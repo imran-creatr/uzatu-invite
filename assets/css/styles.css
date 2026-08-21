@@ -1,0 +1,946 @@
+/* ==========================================================================
+   Қыз ұзату — Арайлым · 14.11.2026
+   Mobile-first. On desktop the invite is shown as a phone-width canvas
+   centred on the sand backdrop.
+   ========================================================================== */
+
+:root {
+  --sand:      #FCF1DE;   /* page background / paper */
+  --gold:      #956826;   /* all type and rules */
+  --gold-deep: #7a5520;   /* hover */
+  --ink:       #201f1d;   /* calendar numerals */
+
+  --serif:  'Cormorant Garamond', 'Times New Roman', serif;
+  /* Great Vibes has no Cyrillic glyphs, so «Арайлым» renders in Marck Script.
+     It is listed explicitly so the fallback is deterministic across browsers.
+     Switch the name to Latin «Arailym» if true Great Vibes is wanted. */
+  --script: 'Great Vibes', 'Marck Script', cursive;
+
+  /* Фон бумажных блоков (2 «Шақыру», 5 «Өтетін орны», 7 «Растау»).
+     Процедурная замена под настоящую текстуру: положите файл в
+     assets/img/ и поменяйте только эту строку, например
+     --paper: url('../img/paper.png'); */
+  --paper: url('../img/paper.svg');
+
+  --page-max: 480px;
+
+  /* motion */
+  --ease-out:  cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-soft: cubic-bezier(0.33, 0.9, 0.33, 1);
+  --reveal-dur: 0.9s;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* `display` declarations below would otherwise beat the UA rule for [hidden] */
+[hidden] { display: none !important; }
+
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--sand);
+  color: var(--gold);
+  font-family: var(--serif);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--gold); }
+a:hover { color: var(--gold-deep); }
+
+img { max-width: 100%; }
+
+.stage {
+  min-height: 100vh;
+  background: var(--sand);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.page {
+  width: 100%;
+  max-width: var(--page-max);
+  background: var(--sand);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(88, 60, 20, 0.10);
+}
+
+/* ── shared bits ─────────────────────────────────────────────────────────── */
+
+.hairline {
+  width: 48px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.4;
+}
+
+.rule {
+  display: block;
+  width: 62%;
+  max-width: 120px;
+  height: auto;
+  opacity: 0.95;
+  transform: rotate(var(--rot, 0deg));
+}
+.rule--flip { --rot: 180deg; }
+
+/* Paper-backed sections stretch the panel art to their own box, so the
+   sheet grows with its content at any width. */
+.sheet {
+  position: relative;
+  width: 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+.sheet--a,
+.sheet--b { background-image: var(--paper); }
+
+.btn {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  font-family: var(--serif);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.3s var(--ease-soft),
+              color      0.3s var(--ease-soft),
+              transform  0.22s var(--ease-soft),
+              box-shadow 0.3s var(--ease-soft);
+}
+/* a slow sheen that crosses the button on hover */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(252, 241, 222, 0.35), transparent);
+  transform: skewX(-18deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.btn:hover::before { animation: sheen 0.85s var(--ease-soft) both; }
+.btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(88, 60, 20, 0.16); }
+.btn:active { transform: translateY(0) scale(0.975); box-shadow: 0 2px 6px rgba(88, 60, 20, 0.14); }
+.btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+
+.btn--solid {
+  margin-top: 6px;
+  padding: 12px 34px;
+  background: var(--gold);
+  color: var(--sand);
+  font-size: clamp(15px, 4.2vw, 17px);
+  letter-spacing: 0.16em;
+}
+.btn--solid:hover { background: var(--gold-deep); color: var(--sand); }
+
+.btn--ghost {
+  margin-top: 4px;
+  padding: 14px 20px;
+  background: transparent;
+  color: var(--gold);
+  font-size: clamp(15px, 4.2vw, 17px);
+  letter-spacing: 0.12em;
+}
+.btn--ghost:hover { background: var(--gold); color: var(--sand); }
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  z-index: 0;
+}
+
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom,
+    rgba(252, 241, 222, 0.32) 0%,
+    rgba(252, 241, 222, 0.06) 38%,
+    rgba(252, 241, 222, 0.34) 100%);
+}
+
+.hero__content {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  padding: 0 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  text-align: center;
+}
+
+.hero__title {
+  margin: 0;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(44px, 14vw, 64px);
+  line-height: 1.06;
+  letter-spacing: 0.01em;
+}
+
+.hero__date {
+  margin: -6px 0 0;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(17px, 5vw, 21px);
+  letter-spacing: 0.06em;
+}
+
+.hero__name {
+  margin: 0;
+  font-family: var(--script);
+  font-size: clamp(38px, 12vw, 54px);
+  line-height: 1.1;
+}
+
+/* ── Шақыру ──────────────────────────────────────────────────────────────── */
+
+.invite {
+  z-index: 3;
+  margin-top: -48px;           /* tucks the sheet under the hero */
+  padding: 72px 40px 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.invite__greeting {
+  margin: 0;
+  font-weight: 500;
+  font-size: clamp(13px, 3.6vw, 15px);
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  text-wrap: pretty;
+}
+
+.invite__lead {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(15px, 4.2vw, 18px);
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+}
+
+.invite__bride {
+  margin: 0;
+  font-weight: 600;
+  font-size: clamp(30px, 8.5vw, 40px);
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+}
+
+.invite__ornament {
+  display: block;
+  width: 88%;
+  max-width: 300px;
+  height: auto;
+  margin: 4px 0 -8px;
+}
+
+.invite__close {
+  margin: -12px 0 0;
+  max-width: 320px;
+  font-weight: 400;
+  font-size: clamp(15px, 4.2vw, 18px);
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+}
+
+/* ── Маңызды күн ─────────────────────────────────────────────────────────── */
+
+.cal {
+  position: relative;
+  background: var(--sand);
+  padding: 68px 30px 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.cal__ornament {
+  display: block;
+  width: 42%;
+  max-width: 150px;
+  height: auto;
+}
+
+.cal__date {
+  margin: 0;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(30px, 9vw, 42px);
+  line-height: 1.15;
+  text-align: center;
+}
+
+.cal__body {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cal__seam {
+  height: 1px;
+  background: var(--ink);
+  opacity: 0.5;
+  transform-origin: left center;
+}
+
+.cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px 2px;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--ink);
+}
+
+.cal__dow {
+  font-size: clamp(12px, 3.5vw, 15px);
+  letter-spacing: 0.04em;
+}
+
+.cal__cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  font-size: clamp(16px, 4.8vw, 20px);
+}
+.cal__cell > span { position: relative; }
+
+.cal__heart {
+  position: absolute;
+  width: 44px;
+  height: 37px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -46%);
+}
+.cal__heart path {
+  stroke-dasharray: var(--len, 260);
+  stroke-dashoffset: var(--len, 260);
+}
+/* the heart inks itself in, then keeps a slow pulse */
+.cal__grid.is-in .cal__heart {
+  animation: heartBeat 2.6s ease-in-out 2s infinite;
+}
+.cal__grid.is-in .cal__heart path {
+  animation: heartDraw 1.5s var(--ease-out) 0.7s forwards;
+}
+
+/* ── Санақ (flip clock) ──────────────────────────────────────────────────── */
+
+.count {
+  position: relative;
+  background: var(--sand);
+  padding: 78px 26px 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.count__title {
+  margin: 0;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(34px, 10.5vw, 46px);
+  line-height: 1.1;
+  text-align: center;
+}
+.count__title--sub {
+  margin: 0 0 34px;
+  font-size: clamp(26px, 8vw, 34px);
+}
+
+.count__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(12px, 4vw, 22px);
+}
+
+.count__unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.count__digits { display: flex; gap: 4px; }
+
+.count__label {
+  font-weight: 500;
+  font-size: clamp(11px, 3.2vw, 14px);
+  letter-spacing: 0.1em;
+}
+
+/* one flip card ------------------------------------------------------------ */
+.flip {
+  --dw: clamp(30px, 9vw, 40px);
+  --dh: clamp(46px, 13.5vw, 60px);
+  position: relative;
+  width: var(--dw);
+  height: var(--dh);
+  border-radius: 7px;
+  background: var(--gold);
+  overflow: hidden;
+  perspective: 220px;
+  box-shadow: 0 2px 5px rgba(88, 60, 20, 0.18);
+  /* Cormorant defaults to oldstyle figures: 3 5 7 9 drop below the baseline
+     and 6 8 run tall, so every digit sat at a different height and the seam
+     cut each one differently. Lining figures are uniform cap-height, which
+     centres them in the card with no nudge (ink centre lands at 30.1 of 60). */
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+
+/* the hairline where the two leaves meet */
+.flip::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(252, 241, 222, 0.45);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.flip__face,
+.flip__leaf {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  background: var(--gold);
+  backface-visibility: hidden;
+}
+
+/* a full-height glyph clipped by each half, so the two halves line up */
+.flip__face > b,
+.flip__leaf > b {
+  display: block;
+  width: 100%;
+  height: var(--dh);
+  line-height: var(--dh);
+  text-align: center;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(28px, 8.4vw, 38px);
+  color: var(--sand);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+
+.flip__face--top,
+.flip__leaf--front { top: 0; border-radius: 7px 7px 0 0; }
+
+.flip__face--bottom,
+.flip__leaf--back { bottom: 0; border-radius: 0 0 7px 7px; }
+
+.flip__face--bottom > b,
+.flip__leaf--back  > b { transform: translateY(-50%); }
+
+.flip__leaf { z-index: 3; }
+.flip__leaf--front { transform-origin: 50% 100%; }
+.flip__leaf--back  { transform-origin: 50% 0%; transform: rotateX(90deg); }
+
+/* shading that deepens as a leaf turns away from the light */
+.flip__leaf::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #3f2a0c;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.flip.is-flipping .flip__leaf--front { animation: leafFall 0.30s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards; }
+.flip.is-flipping .flip__leaf--back  { animation: leafRise 0.34s cubic-bezier(0.25, 0.9, 0.35, 1) 0.30s forwards; }
+.flip.is-flipping .flip__leaf--front::before { animation: shadeIn  0.30s linear forwards; }
+.flip.is-flipping .flip__leaf--back::before  { animation: shadeOut 0.34s linear 0.30s forwards; }
+
+/* the whole unit ticks very slightly as the seconds turn over */
+.count__unit.is-ticking .count__digits { animation: tick 0.34s var(--ease-soft); }
+
+/* ── Өтетін орны ─────────────────────────────────────────────────────────── */
+
+.venue {
+  padding: 78px 40px 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.venue__kicker {
+  margin: 0;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(26px, 7.6vw, 34px);
+  line-height: 1.15;
+}
+
+.venue__name {
+  margin: 0;
+  font-weight: 600;
+  font-size: clamp(24px, 7vw, 32px);
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+}
+
+.venue__image {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+}
+
+.venue__address {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(16px, 4.6vw, 19px);
+  line-height: 1.65;
+  letter-spacing: 0.03em;
+}
+
+.venue__note {
+  margin: 8px 0 0;
+  font-weight: 400;
+  font-size: clamp(12px, 3.4vw, 14px);
+  line-height: 1.75;
+  letter-spacing: 0.1em;
+}
+
+/* ── Ұзату рәсімі ────────────────────────────────────────────────────────── */
+
+.rite {
+  position: relative;
+  background: var(--sand);
+  padding: 78px 34px 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.rite__title {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(24px, 7vw, 30px);
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+}
+
+.rite__text {
+  margin: 0;
+  font-weight: 500;
+  font-size: clamp(14px, 4vw, 17px);
+  line-height: 1.85;
+  letter-spacing: 0.09em;
+}
+
+.rite__ornament {
+  display: block;
+  width: 34%;
+  max-width: 120px;
+  height: auto;
+  margin-top: 6px;
+}
+
+/* ── Растау ──────────────────────────────────────────────────────────────── */
+
+.rsvp {
+  padding: 80px 40px 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  text-align: center;
+}
+
+.rsvp__kicker {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(15px, 4.2vw, 18px);
+  line-height: 1.7;
+  letter-spacing: 0.11em;
+}
+
+.rsvp__thanks {
+  margin: 0;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(19px, 5.4vw, 23px);
+  line-height: 1.5;
+  animation: thanksIn 0.8s var(--ease-out) both;
+}
+
+.rsvp__error {
+  margin: 0;
+  font-size: clamp(13px, 3.6vw, 15px);
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  color: #b04a2f;
+  animation: thanksIn 0.5s var(--ease-out) both;
+}
+
+.btn[disabled] { opacity: 0.6; cursor: default; pointer-events: none; }
+
+.rsvp__form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  transition: opacity 0.35s var(--ease-soft), transform 0.35s var(--ease-soft);
+}
+.rsvp__form.is-leaving { opacity: 0; transform: translateY(-8px); }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.field__label {
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  padding: 0;
+}
+
+.field__hint {
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(149, 104, 38, 0.72);
+}
+
+/* the input keeps a static rail; a second, coloured rail grows over it */
+.field__wrap { position: relative; margin-top: 18px; }
+.field__wrap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s var(--ease-out);
+}
+.field__wrap:focus-within::after { transform: scaleX(1); }
+
+.field__input {
+  width: 100%;
+  padding: 6px 2px;
+  border: none;
+  border-bottom: 1px solid rgba(149, 104, 38, 0.55);
+  background: transparent;
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--gold);
+  outline: none;
+}
+.field__input[aria-invalid='true'] { border-bottom-color: #b04a2f; }
+.field__input[aria-invalid='true'] ~ * { color: #b04a2f; }
+.field.is-shaking { animation: nudge 0.42s ease-in-out; }
+
+.choices {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.choices.is-shaking { animation: nudge 0.42s ease-in-out; }
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: clamp(16px, 4.4vw, 18px);
+  line-height: 1.4;
+  color: var(--gold);
+  min-height: 44px;
+}
+.choice__text { transition: transform 0.25s var(--ease-soft), opacity 0.25s ease; }
+.choice:hover .choice__text { transform: translateX(3px); opacity: 0.78; }
+
+/* the real radio stays focusable but invisible */
+.choice__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice__mark {
+  position: relative;
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s var(--ease-soft), box-shadow 0.25s ease;
+}
+.choice:hover .choice__mark { transform: scale(1.12); }
+.choice__mark::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  transform: scale(0);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.choice__input:checked + .choice__mark::after { transform: scale(1); }
+.choice__input:checked + .choice__mark { box-shadow: 0 0 0 4px rgba(149, 104, 38, 0.12); }
+.choice__input:focus-visible + .choice__mark {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.rsvp__ornament {
+  display: block;
+  width: 88%;
+  max-width: 300px;
+  height: auto;
+  margin-top: 10px;
+}
+
+/* ==========================================================================
+   Motion layer
+   JS tags each element with .reveal (+ a --d delay) and flips .is-in when it
+   scrolls into view. Everything below is opt-in per element type, so nothing
+   depends on inline styles.
+   ========================================================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity   var(--reveal-dur) var(--ease-out) var(--d, 0ms),
+              transform var(--reveal-dur) var(--ease-out) var(--d, 0ms);
+  will-change: opacity, transform;
+}
+.reveal.is-in { opacity: 1; transform: none; will-change: auto; }
+
+/* rules and hairlines draw themselves outwards from the centre */
+.hairline.reveal,
+.cal__seam.reveal { transform: scaleX(0); transform-origin: center; }
+.hairline.reveal.is-in,
+.cal__seam.reveal.is-in { transform: scaleX(1); }
+
+/* ornaments settle in with a touch of scale */
+.invite__ornament.reveal,
+.rsvp__ornament.reveal,
+.cal__ornament.reveal,
+.rite__ornament.reveal,
+.venue__image.reveal { transform: translateY(14px) scale(0.955); }
+.invite__ornament.reveal.is-in,
+.rsvp__ornament.reveal.is-in,
+.cal__ornament.reveal.is-in,
+.rite__ornament.reveal.is-in,
+.venue__image.reveal.is-in { transform: none; }
+
+/* spaced-out headings tighten as they arrive */
+.rite__title.reveal,
+.invite__bride.reveal { letter-spacing: 0.3em; transition-property: opacity, transform, letter-spacing; }
+.rite__title.reveal.is-in { letter-spacing: 0.14em; }
+.invite__bride.reveal.is-in { letter-spacing: 0.04em; }
+
+/* ── hero entrance: each line follows the one before it ─────────────────── */
+.hero__content > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1.15s var(--ease-out) var(--hd, 0ms),
+              transform 1.15s var(--ease-out) var(--hd, 0ms);
+}
+.hero__content > .rule { transform: rotate(var(--rot, 0deg)) scaleX(0); }
+
+.hero.is-in .hero__content > * { opacity: 1; transform: translateY(0); }
+.hero.is-in .hero__content > .rule { transform: rotate(var(--rot, 0deg)) scaleX(1); }
+.hero.is-in .hero__content > .rule { opacity: 0.95; }
+
+.hero__content > *:nth-child(1) { --hd: 1800ms; }
+.hero__content > *:nth-child(2) { --hd: 2020ms; }
+.hero__content > *:nth-child(3) { --hd: 2140ms; }
+.hero__content > *:nth-child(4) { --hd: 2260ms; }
+.hero__content > *:nth-child(5) { --hd: 2440ms; }
+
+/* the name gets one soft breath after it lands */
+.hero.is-in .hero__name { animation: breathe 7s ease-in-out 3.8s infinite; }
+
+/* ── calendar cells sweep in ─────────────────────────────────────────────── */
+.cal__grid .cal__cell,
+.cal__grid .cal__dow {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s var(--ease-out) var(--d, 0ms),
+              transform 0.5s var(--ease-out) var(--d, 0ms);
+}
+.cal__grid.is-in .cal__cell,
+.cal__grid.is-in .cal__dow { opacity: 1; transform: none; }
+
+/* ── idle life for the florals ────────────────────────────────────────────
+   Each ornament keeps breathing after it has arrived. Delays clear the
+   reveal (max 510ms stagger + 900ms transition) so the loop never starts
+   mid-transition and jumps, and each one runs on its own period so they
+   never pulse in unison. Amplitudes stay tiny — this should read as air
+   moving through the page, not as motion.                                */
+
+.cal__ornament.reveal.is-in {
+  animation: bloomBreathe 9s ease-in-out 1.7s infinite;
+}
+
+.invite__ornament.reveal.is-in {
+  animation: garlandDrift 11s ease-in-out 1.9s infinite;
+}
+
+.rsvp__ornament.reveal.is-in {
+  animation: garlandDrift 12.5s ease-in-out 2.4s infinite;
+}
+
+/* the bouquet hangs from its stems, so it sways from the bottom */
+.rite__ornament.reveal.is-in {
+  transform-origin: 50% 92%;
+  animation: bouquetSway 8.5s ease-in-out 2.1s infinite;
+}
+
+/* the hero flourishes keep the rotation their reveal gave them */
+.hero.is-in .hero__content > .rule {
+  animation: ruleBreathe 10s ease-in-out 3.4s infinite;
+}
+
+/* ── keyframes ───────────────────────────────────────────────────────────── */
+
+@keyframes leafFall {
+  from { transform: rotateX(0deg); }
+  to   { transform: rotateX(-90deg); }
+}
+@keyframes leafRise {
+  from { transform: rotateX(90deg); }
+  to   { transform: rotateX(0deg); }
+}
+@keyframes shadeIn  { from { opacity: 0; }    to { opacity: 0.3; } }
+@keyframes shadeOut { from { opacity: 0.3; }  to { opacity: 0; } }
+
+@keyframes tick {
+  0%   { transform: translateY(0); }
+  35%  { transform: translateY(1.5px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes heartDraw { to { stroke-dashoffset: 0; } }
+
+@keyframes heartBeat {
+  0%, 100% { transform: translate(-50%, -46%) scale(1); }
+  50%      { transform: translate(-50%, -46%) scale(1.07); }
+}
+
+@keyframes bloomBreathe {
+  0%, 100% { transform: scale(1)     rotate(0deg); }
+  50%      { transform: scale(1.028) rotate(0.6deg); }
+}
+
+@keyframes garlandDrift {
+  0%, 100% { transform: translateY(0)      scale(1); }
+  50%      { transform: translateY(-3.5px) scale(1.012); }
+}
+
+@keyframes bouquetSway {
+  0%, 100% { transform: rotate(-1.4deg) translateY(0); }
+  50%      { transform: rotate(1.4deg)  translateY(-2px); }
+}
+
+/* the rule carries --rot from its modifier, so every frame must re-state it */
+@keyframes ruleBreathe {
+  0%, 100% { transform: rotate(var(--rot, 0deg)) scaleX(1);     opacity: 0.95; }
+  50%      { transform: rotate(var(--rot, 0deg)) scaleX(1.035); opacity: 1; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.022); }
+}
+
+@keyframes sheen {
+  from { left: -60%; opacity: 1; }
+  to   { left: 120%; opacity: 1; }
+}
+
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-5px); }
+  45%      { transform: translateX(4px); }
+  70%      { transform: translateX(-2px); }
+}
+
+@keyframes thanksIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── reduced motion: show everything, move nothing ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .reveal,
+  .hero__content > *,
+  .cal__grid .cal__cell,
+  .cal__grid .cal__dow {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero__content > .rule { transform: rotate(var(--rot, 0deg)) !important; }
+  .cal__ornament, .invite__ornament, .rsvp__ornament, .rite__ornament {
+    transform: none !important;
+  }
+  .cal__heart path { stroke-dashoffset: 0 !important; }
+}

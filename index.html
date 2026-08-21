@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Қыз ұзату — Арайлым · 14 қараша 2026</title>
+<meta name="description" content="Арайлымның ұзату тойына арналған шақыру. 14 қараша 2026 жыл, «Altyn Ballroom», Шымкент.">
+<meta name="theme-color" content="#FCF1DE">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Great+Vibes&family=Marck+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<div class="stage">
+  <div class="page" id="page">
+
+    <!-- ══ Hero ══ -->
+    <section class="hero" data-screen-label="Hero">
+      <video class="hero__video" id="heroVideo"
+             src="assets/video/hero.mp4"
+             playsinline muted autoplay preload="auto"></video>
+      <div class="hero__veil"></div>
+      <div class="hero__content">
+        <h1 class="hero__title">Қыз ұзату</h1>
+        <img class="rule rule--flip" src="assets/img/divider.png" alt="">
+        <p class="hero__date">14 қараша 2026 жыл</p>
+        <img class="rule" src="assets/img/divider.png" alt="">
+        <p class="hero__name">Арайлым</p>
+      </div>
+    </section>
+
+    <!-- ══ Шақыру ══ -->
+    <section class="sheet sheet--a invite" data-screen-label="Шақыру">
+      <p class="invite__greeting">Құрметті ағайын-туыс, бауырлар, құда-жекжат, нағашы-жиен, әріптестер, дос-жарандар және көршілер!</p>
+      <div class="hairline"></div>
+      <p class="invite__lead">Сіздерді аяулы қызымыз</p>
+      <p class="invite__bride">АРАЙЛЫМНЫҢ</p>
+      <p class="invite__lead">Ұзату тойына арналған</p>
+      <img class="invite__ornament" src="assets/img/ornament-wide.png" alt="">
+      <p class="invite__close">Ақ дастарханымыздың<br>қадірлі қонағы болуға шақырамыз!</p>
+    </section>
+
+    <!-- ══ Маңызды күн ══ -->
+    <section class="cal" data-screen-label="Маңызды күн">
+      <img class="cal__ornament" src="assets/img/ornament-date.png" alt="">
+      <p class="cal__date">14 қараша, 2026ж.</p>
+      <div class="cal__body">
+        <div class="cal__seam"></div>
+        <div class="cal__grid" id="calGrid">
+          <span class="cal__dow">ДС</span>
+          <span class="cal__dow">СС</span>
+          <span class="cal__dow">СР</span>
+          <span class="cal__dow">БС</span>
+          <span class="cal__dow">ЖМ</span>
+          <span class="cal__dow">СБ</span>
+          <span class="cal__dow">ЖБ</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Санақ ══ -->
+    <section class="count" data-screen-label="Санақ">
+      <p class="count__title">Той салтанатына</p>
+      <p class="count__title count__title--sub">дейін.</p>
+      <div class="count__row" id="countRow"></div>
+    </section>
+
+    <!-- ══ Өтетін орны ══ -->
+    <section class="sheet sheet--b venue" data-screen-label="Өтетін орны">
+      <p class="venue__kicker">Өтетін орны</p>
+      <p class="venue__name">«Altyn Ballroom»</p>
+      <img class="venue__image" src="assets/img/venue.png" alt="Altyn Ballroom">
+      <div class="hairline"></div>
+      <p class="venue__address">Мекенжайы:<br>Шымкент қаласы,<br>Жібек жолы көшесі, 130/1</p>
+      <p class="venue__note">СІЗДЕРГЕ ЫҢҒАЙЛЫ БОЛУЫ ҮШІН<br>ТӨМЕНДЕ КӨРСЕТІЛГЕН<br>2GIS КАРТАСЫН<br>ПАЙДАЛАНУЫҢЫЗДЫ СҰРАЙМЫЗ!</p>
+      <a class="btn btn--solid" target="_blank" rel="noopener"
+         href="https://2gis.kz/shymkent/firm/70000001113194708">2GIS</a>
+    </section>
+
+    <!-- ══ Ұзату рәсімі ══ -->
+    <section class="rite" data-screen-label="Ұзату рәсімі">
+      <h2 class="rite__title">ҰЗАТУ РӘСІМІ</h2>
+      <div class="hairline"></div>
+      <p class="rite__text">СІЗДЕРДІҢ ЖӘНЕ<br>ҚОНАҚТАРДЫҢ ЫҢҒАЙЛЫЛЫҒЫ ҮШІН<br>ТОЙҒА БАЛАЛАРСЫЗ<br>КЕЛУЛЕРІҢІЗДІ СҰРАЙМЫЗ!</p>
+      <img class="rite__ornament" src="assets/img/ornament-small.png" alt="">
+    </section>
+
+    <!-- ══ Растау ══ -->
+    <section class="sheet sheet--b rsvp" data-screen-label="Растау">
+      <p class="rsvp__kicker">ТОЙҒА КЕЛЕТІНІҢІЗДІ<br>РАСТАУЫҢЫЗДЫ<br>СҰРАЙМЫЗ</p>
+      <div class="hairline"></div>
+
+      <p class="rsvp__thanks" id="rsvpThanks" hidden>Жауабыңыз үшін рахмет!</p>
+      <p class="rsvp__error"  id="rsvpError"  hidden role="alert"></p>
+
+      <form class="rsvp__form" id="rsvpForm" novalidate>
+        <div class="field">
+          <span class="field__label">Есіміңіз</span>
+          <span class="field__hint">Жұбайыңызбен келсеңіз, есіміңізді бірге жазыңыз</span>
+          <span class="field__wrap">
+            <input class="field__input" id="rsvpName" type="text" name="name"
+                   autocomplete="name" enterkeyhint="done">
+          </span>
+        </div>
+
+        <fieldset class="choices">
+          <legend class="field__label">Тойға келесіз бе?</legend>
+          <label class="choice">
+            <input class="choice__input" type="radio" name="attend" value="Иә, келемін">
+            <span class="choice__mark"></span>
+            <span class="choice__text">Иә, келемін</span>
+          </label>
+          <label class="choice">
+            <input class="choice__input" type="radio" name="attend" value="Жұбайыммен келемін">
+            <span class="choice__mark"></span>
+            <span class="choice__text">Жұбайыммен келемін</span>
+          </label>
+          <label class="choice">
+            <input class="choice__input" type="radio" name="attend" value="Өкінішке орай, келе алмаймын">
+            <span class="choice__mark"></span>
+            <span class="choice__text">Өкінішке орай, келе алмаймын</span>
+          </label>
+        </fieldset>
+
+        <button class="btn btn--ghost" type="submit">Жауапты жіберу</button>
+      </form>
+
+      <img class="rsvp__ornament" src="assets/img/ornament-wide.png" alt="">
+    </section>
+
+  </div>
+</div>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
