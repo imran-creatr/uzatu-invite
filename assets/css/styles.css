@@ -6,15 +6,16 @@
 
 :root {
   --sand:      #FCF1DE;   /* page background / paper */
-  --gold:      #956826;   /* all type and rules */
-  --gold-deep: #7a5520;   /* hover */
-  --ink:       #201f1d;   /* calendar numerals */
+  --gold:      #684108;   /* all type and rules */
+  --gold-rgb:  104, 65, 8;/* same colour for rgba() tints, kept in one place */
+  --gold-deep: #4c2f05;   /* hover — a shade deeper than the type */
+  --ink:       #684108;   /* calendar numerals, same as the rest of the type */
 
   --serif:  'Cormorant Garamond', 'Times New Roman', serif;
-  /* Great Vibes has no Cyrillic glyphs, so «Арайлым» renders in Marck Script.
-     It is listed explicitly so the fallback is deterministic across browsers.
-     Switch the name to Latin «Arailym» if true Great Vibes is wanted. */
-  --script: 'Great Vibes', 'Marck Script', cursive;
+  /* «Арайлым» — Cormorant Infant Medium Italic. Этот вариант Cormorant
+     содержит кириллицу, поэтому имя рисуется настоящим шрифтом, без подмены
+     (в Great Vibes кириллицы нет, и раньше имя подменялось Marck Script). */
+  --script: 'Cormorant Infant', 'Cormorant Garamond', serif;
 
   /* Фон бумажных блоков (2 «Шақыру», 5 «Өтетін орны», 7 «Растау»).
      Процедурная замена под настоящую текстуру: положите файл в
@@ -209,8 +210,11 @@ img { max-width: 100%; }
 .hero__name {
   margin: 0;
   font-family: var(--script);
-  font-size: clamp(38px, 12vw, 54px);
-  line-height: 1.1;
+  font-weight: 500;              /* Medium */
+  font-style: italic;
+  font-size: clamp(44px, 13.5vw, 62px);
+  line-height: 1.12;
+  letter-spacing: 0.01em;
 }
 
 /* ── Шақыру ──────────────────────────────────────────────────────────────── */
@@ -648,7 +652,7 @@ img { max-width: 100%; }
   font-style: italic;
   font-size: 13px;
   line-height: 1.5;
-  color: rgba(149, 104, 38, 0.72);
+  color: rgba(var(--gold-rgb), 0.72);
 }
 
 /* the input keeps a static rail; a second, coloured rail grows over it */
@@ -671,7 +675,7 @@ img { max-width: 100%; }
   width: 100%;
   padding: 6px 2px;
   border: none;
-  border-bottom: 1px solid rgba(149, 104, 38, 0.55);
+  border-bottom: 1px solid rgba(var(--gold-rgb), 0.55);
   background: transparent;
   font-family: var(--serif);
   font-size: 18px;
@@ -738,7 +742,7 @@ img { max-width: 100%; }
   transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .choice__input:checked + .choice__mark::after { transform: scale(1); }
-.choice__input:checked + .choice__mark { box-shadow: 0 0 0 4px rgba(149, 104, 38, 0.12); }
+.choice__input:checked + .choice__mark { box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.12); }
 .choice__input:focus-visible + .choice__mark {
   outline: 2px solid var(--gold);
   outline-offset: 3px;

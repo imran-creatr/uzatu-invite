@@ -37,7 +37,7 @@
       '<svg class="cal__heart" viewBox="0 0 100 84" aria-hidden="true">' +
       '<path d="M50 78 C24 59 5 44 5 27 C5 13 16 4 27 4 C38 4 46 11 50 19 ' +
       'C54 11 62 4 73 4 C84 4 95 13 95 27 C95 44 76 59 50 78 Z" ' +
-      'fill="none" stroke="#201f1d" stroke-width="2.4" ' +
+      'fill="none" stroke="currentColor" stroke-width="2.4" ' +
       'stroke-linejoin="round" stroke-linecap="round"/></svg>';
 
     var lead = (new Date(2026, 10, 1).getDay() + 6) % 7;   // blanks before day 1
